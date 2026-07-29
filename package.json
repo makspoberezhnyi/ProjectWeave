@@ -1,15 +1,20 @@
 {
-  "name": "weave-scaffold",
+  "name": "weave",
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
     "expo": "~57.0.9",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
-    "react-native": "0.86.2"
+    "react-dom": "19.2.3",
+    "react-native": "0.86.2",
+    "react-native-svg": "^15.15.5",
+    "react-native-web": "^0.21.2",
+    "tamagui": "^2.6.0"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "babel-preset-expo": "^57.0.5",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -17,6 +22,9 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web"
+  },
+  "overrides": {
+    "react-dom": "19.2.3"
   },
   "private": true
 }

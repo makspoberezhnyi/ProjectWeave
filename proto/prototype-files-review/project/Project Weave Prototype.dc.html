@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<style>
+@keyframes weaveFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes weaveSlideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+body{margin:0}
+*{box-sizing:border-box}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#EDE7DD;border-radius:8px}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+</helmet>
+
+<div style="width:100%;height:100vh;display:flex;flex-direction:column;background:#FDFBF7;color:#2B2620;font-family:ui-rounded,'SF Pro Rounded',-apple-system,'Segoe UI',system-ui,sans-serif;position:relative;overflow:hidden">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid #EDE7DD;background:#FFFFFF;flex-shrink:0">
+    <div style="font-size:20px;font-weight:700;letter-spacing:-0.02em">Weave</div>
+    <div style="display:flex;background:#FDFBF7;border:1px solid #EDE7DD;border-radius:999px;padding:3px;gap:2px">
+      <button onClick="{{setViewCalendar}}" style="{{calendarToggleStyle}}">Calendar</button>
+      <button onClick="{{setViewList}}" style="{{listToggleStyle}}">List</button>
+      <button onClick="{{setViewCanvas}}" style="{{canvasToggleStyle}}">Canvas</button>
+    </div>
+  </div>
+
+  <sc-if value="{{isCalendarView}}" hint-placeholder-val="{{true}}">
+  <div style="flex:1;overflow:auto;padding:24px clamp(16px,4vw,48px) 48px;animation:weaveFadeIn 0.25s ease">
+    <div style="max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:24px">
+      <button onClick="{{openSave}}" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:14px 18px;background:#FFFFFF;border:1px solid #EDE7DD;border-radius:999px;font-size:15px;color:#8A8175;cursor:pointer;box-shadow:0 1px 3px rgba(43,38,32,0.06);font-family:inherit">
+        <span style="font-size:16px">🔍</span>
+        <span>Save a movie, album, book, video…</span>
+      </button>
+      <sc-for list="{{calendarDays}}" as="day" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:16px;font-weight:700;color:#2B2620;display:flex;align-items:center;gap:10px">
+            {{day.dateLabel}}
+            <sc-if value="{{day.itemCount}}"><span style="font-size:12px;font-weight:600;padding:3px 10px;background:#EDE7DD;border-radius:999px;color:#8A8175">{{day.itemCount}} items</span></sc-if>
+          </div>
+          <sc-if value="{{day.hasItems}}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px">
+              <sc-for list="{{day.items}}" as="item" hint-placeholder-count="2">
+                <div onClick="{{item.onOpen}}" style="display:flex;flex-direction:column;gap:8px;padding:12px;background:#FFFFFF;border:1px solid #EDE7DD;border-radius:16px;cursor:pointer;box-shadow:0 1px 3px rgba(43,38,32,0.05)">
+                  <div style="width:100%;height:80px;border-radius:12px;background:{{item.stripeBg}};display:flex;align-items:center;justify-content:center">
+                    <span style="font-family:ui-monospace,Menlo,monospace;font-size:8px;color:#8A8175;text-align:center">{{item.meta.placeholder}}</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+                    <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{item.title}}</div>
+                    <div style="display:flex;align-items:center;gap:6px">
+                      <span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:999px;background:{{item.meta.color}};flex-shrink:0">
+                        <sc-if value="{{item.isWant}}"><svg width="8" height="8" viewBox="0 0 14 14"><line x1="7" y1="2" x2="7" y2="12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"></line><line x1="2" y1="7" x2="12" y2="7" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"></line></svg></sc-if>
+                        <sc-if value="{{item.isInProgress}}"><svg width="8" height="8" viewBox="0 0 14 14"><polygon points="3,2 12,7 3,12" fill="#FFFFFF"></polygon></svg></sc-if>
+                        <sc-if value="{{item.isDone}}"><svg width="8" height="8" viewBox="0 0 14 14"><path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if>
+                      </span>
+                      <span style="font-size:10px;color:#8A8175;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{item.meta.label}}</span>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{!day.hasItems}}">
+            <div style="padding:24px;text-align:center;background:#FFFFFF;border:1px dashed #EDE7DD;border-radius:16px;color:#8A8175;font-size:13px">No items assigned to this day</div>
+          </sc-if>
+          <button onClick="{{day.toggleCanvas}}" style="padding:10px 16px;border-radius:999px;border:1px solid #EDE7DD;background:#FFFFFF;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:{{day.canvasOpen ? '#FFFFFF' : '#8A8175'}};background:{{day.canvasOpen ? '#2B2620' : '#FFFFFF'}}">{{day.canvasButtonLabel}}</button>
+          <sc-if value="{{day.canvasOpen}}">
+            <div style="background:#F4F1EA;border:1px solid #EDE7DD;border-radius:16px;height:340px;position:relative;overflow:hidden">
+              <div onWheel="{{day.onWheel}}" onPointerDown="{{day.onCanvasPointerDown}}" style="width:100%;height:100%;cursor:grab;position:relative">
+                <div style="position:absolute;top:0;left:0;width:1px;height:1px;transform-origin:0 0;transform:{{day.worldTransform}}">
+                  <svg style="position:absolute;top:0;left:0;overflow:visible;pointer-events:none" width="1" height="1">
+                    <defs><marker id="arrow-{{day.id}}" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2B2620"></path></marker></defs>
+                    <sc-for list="{{day.connectionPaths}}" as="conn" hint-placeholder-count="1">
+                      <path d="{{conn.d}}" stroke="#2B2620" stroke-width="2" fill="none" marker-end="url(#arrow-{{day.id}})" opacity="0.55"></path>
+                    </sc-for>
+                    <sc-if value="{{day.tempLine}}">
+                      <path d="{{day.tempLine.d}}" stroke="#2B2620" stroke-width="2" stroke-dasharray="5,5" fill="none" opacity="0.4"></path>
+                    </sc-if>
+                  </svg>
+                  <sc-for list="{{day.connectionPaths}}" as="conn" hint-placeholder-count="1">
+                    <sc-if value="{{conn.showLabel}}" hint-placeholder-val="{{false}}">
+                      <div onClick="{{conn.onEdit}}" style="position:absolute;left:{{conn.midX}}px;top:{{conn.midY}}px;transform:translate(-50%,-50%);background:#FFFFFF;border:1px solid #EDE7DD;border-radius:999px;padding:4px 12px;font-size:10px;font-weight:600;color:#2B2620;white-space:nowrap;cursor:pointer">{{conn.label}}</div>
+                    </sc-if>
+                    <sc-if value="{{conn.isEditing}}" hint-placeholder-val="{{false}}">
+                      <input value="{{conn.label}}" onChange="{{conn.onLabelChange}}" onBlur="{{conn.onLabelBlur}}" placeholder="label…" autoFocus="{{true}}" style="position:absolute;left:{{conn.midX}}px;top:{{conn.midY}}px;transform:translate(-50%,-50%);width:120px;font-size:11px;padding:6px 10px;border-radius:999px;border:1px solid #E8604C;outline:none;font-family:inherit;background:#FFFFFF"></input>
+                    </sc-if>
+                  </sc-for>
+                  <sc-for list="{{day.placedItems}}" as="item" hint-placeholder-count="1">
+                    <div data-item-id="{{item.id}}" onPointerDown="{{item.onDragStart}}" style="position:absolute;left:{{item.x}}px;top:{{item.y}}px;width:120px;background:#FFFFFF;border:1px solid #EDE7DD;border-radius:16px;box-shadow:0 1px 4px rgba(43,38,32,0.08);cursor:grab;user-select:none">
+                      <div style="height:60px;border-radius:16px 16px 0 0;background:{{item.stripeBg}};display:flex;align-items:center;justify-content:center">
+                        <div style="width:14px;height:14px;border-radius:999px;background:{{item.meta.color}};display:flex;align-items:center;justify-content:center">
+                          <sc-if value="{{item.isWant}}"><svg width="6" height="6" viewBox="0 0 14 14"><line x1="7" y1="2" x2="7" y2="12" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"></line><line x1="2" y1="7" x2="12" y2="7" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"></line></svg></sc-if>
+                          <sc-if value="{{item.isDone}}"><svg width="6" height="6" viewBox="0 0 14 14"><path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="#FFFFFF" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if>
+                        </div>
+                      </div>
+                      <div style="padding:6px 8px;font-size:10px;font-weight:600;line-height:1.2;white-space:normal">{{item.title}}</div>
+                      <div onPointerDown="{{item.onConnectStart}}" title="Drag to connect" style="position:absolute;right:-6px;top:50%;transform:translateY(-50%);width:12px;height:12px;border-radius:999px;background:{{item.meta.color}};border:1px solid #FFFFFF;cursor:crosshair"></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{isListView}}" hint-placeholder-val="{{true}}">
+  <div style="flex:1;overflow:auto;padding:24px clamp(16px,4vw,48px) 48px;animation:weaveFadeIn 0.25s ease">
+    <div style="max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
+      <button onClick="{{openSave}}" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:14px 18px;background:#FFFFFF;border:1px solid #EDE7DD;border-radius:999px;font-size:15px;color:#8A8175;cursor:pointer;box-shadow:0 1px 3px rgba(43,38,32,0.06);font-family:inherit">
+        <span style="font-size:16px">🔍</span>
+        <span>Save a movie, album, book, video…</span>
+      </button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <sc-for list="{{filterChips}}" as="chip" hint-placeholder-count="4">
+          <button onClick="{{chip.toggle}}" style="{{chip.style}}">
+            <span style="{{chip.dotStyle}}"></span>{{chip.label}}
+          </button>
+        </sc-for>
+      </div>
+      <sc-if value="{{hasVisibleItems}}" hint-placeholder-val="{{true}}">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{visibleItems}}" as="item" hint-placeholder-count="4">
+          <div onClick="{{item.onOpen}}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:#FFFFFF;border:1px solid #EDE7DD;border-radius:16px;cursor:pointer;box-shadow:0 1px 3px rgba(43,38,32,0.05)">
+            <div style="width:56px;height:56px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:{{item.stripeBg}}">
+              <span style="font-family:ui-monospace,Menlo,monospace;font-size:8px;color:#8A8175;text-align:center;line-height:1.3">{{item.meta.placeholder}}</span>
+            </div>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+              <div style="font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{item.title}}</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px 3px 7px;border-radius:999px;background:{{item.tagBg}};color:{{item.meta.color}}">
+                  <span style="width:6px;height:6px;border-radius:999px;background:{{item.meta.color}}"></span>{{item.meta.label}}
+                </span>
+                <span style="font-size:12px;color:#8A8175">{{item.subtitle}}</span>
+              </div>
+            </div>
+            <div style="{{item.statusBadgeStyle}}">
+              <sc-if value="{{item.isWant}}"><svg width="12" height="12" viewBox="0 0 14 14"><line x1="7" y1="2" x2="7" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line><line x1="2" y1="7" x2="12" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line></svg></sc-if>
+              <sc-if value="{{item.isInProgress}}"><svg width="12" height="12" viewBox="0 0 14 14"><polygon points="3,2 12,7 3,12" fill="currentColor"></polygon></svg></sc-if>
+              <sc-if value="{{item.isDone}}"><svg width="12" height="12" viewBox="0 0 14 14"><path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if>
+            </div>
+            <span style="color:#8A8175;font-size:16px">›</span>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
+      <sc-if value="{{!hasVisibleItems}}">
+        <div style="padding:48px 0;text-align:center;color:#8A8175;font-size:14px">No items match these filters.</div>
+      </sc-if>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{isCanvasView}}" hint-placeholder-val="{{false}}">
+  <div style="flex:1;position:relative;overflow:hidden;display:flex;animation:weaveFadeIn 0.25s ease">
+    <sc-if value="{{sidebarOpen}}" hint-placeholder-val="{{true}}">
+    <div style="width:220px;flex-shrink:0;background:#FFFFFF;border-right:1px solid #EDE7DD;display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:16px 16px 8px;font-size:13px;font-weight:700;color:#8A8175;text-transform:uppercase;letter-spacing:0.04em">Not yet placed</div>
+      <div style="flex:1;overflow:auto;padding:8px 12px 16px;display:flex;flex-direction:column;gap:8px">
+        <sc-for list="{{unplacedItems}}" as="item" hint-placeholder-count="2">
+          <div style="display:flex;align-items:center;gap:10px;padding:8px;background:#FDFBF7;border:1px solid #EDE7DD;border-radius:12px">
+            <div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;background:{{item.stripeBg}}"></div>
+            <div style="flex:1;min-width:0;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{item.title}}</div>
+            <button onClick="{{item.onAdd}}" title="Add to canvas" style="flex-shrink:0;width:24px;height:24px;border-radius:999px;border:none;background:{{item.meta.color}};color:#FFFFFF;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit">+</button>
+          </div>
+        </sc-for>
+        <sc-if value="{{!hasUnplacedItems}}"><div style="padding:16px 4px;font-size:12px;color:#8A8175">Everything is on the board.</div></sc-if>
+      </div>
+    </div>
+    </sc-if>
+    <div ref="{{canvasAreaRef}}" onWheel="{{onWheel}}" onPointerDown="{{onCanvasBackgroundPointerDown}}" style="flex:1;position:relative;overflow:hidden;background-color:#F4F1EA;background-image:radial-gradient(#E4DED2 1.4px, transparent 1.4px);background-size:22px 22px;cursor:grab">
+      <div ref="{{worldRef}}" style="position:absolute;top:0;left:0;width:1px;height:1px;transform-origin:0 0;transform:{{worldTransform}}">
+        <svg style="position:absolute;top:0;left:0;overflow:visible;pointer-events:none" width="1" height="1">
+          <defs><marker id="weave-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2B2620"></path></marker></defs>
+          <sc-for list="{{connectionPaths}}" as="conn" hint-placeholder-count="1">
+            <path d="{{conn.d}}" stroke="#2B2620" stroke-width="2" fill="none" marker-end="url(#weave-arrow)" opacity="0.55"></path>
+          </sc-for>
+          <sc-if value="{{tempLine}}">
+            <path d="{{tempLine.d}}" stroke="#2B2620" stroke-width="2" stroke-dasharray="5,5" fill="none" opacity="0.4"></path>
+          </sc-if>
+        </svg>
+        <sc-for list="{{connectionPaths}}" as="conn" hint-placeholder-count="1">
+          <sc-if value="{{conn.isEditing}}" hint-placeholder-val="{{false}}">
+            <input value="{{conn.label}}" onChange="{{conn.onLabelChange}}" onBlur="{{conn.onLabelBlur}}" placeholder="7 PM, after dinner…" autoFocus="{{true}}" style="position:absolute;left:{{conn.midX}}px;top:{{conn.midY}}px;transform:translate(-50%,-50%);width:140px;font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid #E8604C;outline:none;font-family:inherit;background:#FFFFFF"></input>
+          </sc-if>
+          <sc-if value="{{conn.showLabel}}" hint-placeholder-val="{{false}}">
+            <div onClick="{{conn.onEdit}}" style="position:absolute;left:{{conn.midX}}px;top:{{conn.midY}}px;transform:translate(-50%,-50%);background:#FFFFFF;border:1px solid #EDE7DD;border-radius:999px;padding:4px 12px;font-size:11px;font-weight:600;color:#2B2620;white-space:nowrap;cursor:pointer;box-shadow:0 1px 3px rgba(43,38,32,0.08)">{{conn.label}}</div>
+          </sc-if>
+        </sc-for>
+        <sc-for list="{{placedItems}}" as="item" hint-placeholder-count="2">
+          <div data-item-id="{{item.id}}" onPointerDown="{{item.onDragStart}}" style="position:absolute;left:{{item.x}}px;top:{{item.y}}px;width:170px;background:#FFFFFF;border:1px solid #EDE7DD;border-radius:20px;box-shadow:0 2px 8px rgba(43,38,32,0.08);cursor:grab;user-select:none">
+            <div style="height:96px;border-radius:20px 20px 0 0;background:{{item.stripeBg}};display:flex;align-items:center;justify-content:center;position:relative">
+              <span style="font-family:ui-monospace,Menlo,monospace;font-size:9px;color:#8A8175">{{item.meta.placeholder}}</span>
+              <div style="{{item.statusBadgeStyleSmall}}">
+                <sc-if value="{{item.isWant}}"><svg width="10" height="10" viewBox="0 0 14 14"><line x1="7" y1="2" x2="7" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line><line x1="2" y1="7" x2="12" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line></svg></sc-if>
+                <sc-if value="{{item.isInProgress}}"><svg width="10" height="10" viewBox="0 0 14 14"><polygon points="3,2 12,7 3,12" fill="currentColor"></polygon></svg></sc-if>
+                <sc-if value="{{item.isDone}}"><svg width="10" height="10" viewBox="0 0 14 14"><path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if>
+              </div>
+            </div>
+            <div style="padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px">
+              <div style="font-size:13px;font-weight:600;line-height:1.25">{{item.title}}</div>
+              <span style="display:inline-flex;align-self:flex-start;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:3px 8px 3px 6px;border-radius:999px;background:{{item.tagBg}};color:{{item.meta.color}}">
+                <span style="width:5px;height:5px;border-radius:999px;background:{{item.meta.color}}"></span>{{item.meta.label}}
+              </span>
+            </div>
+            <div onPointerDown="{{item.onConnectStart}}" title="Drag to connect" style="position:absolute;right:-7px;top:50%;transform:translateY(-50%);width:14px;height:14px;border-radius:999px;background:{{item.meta.color}};border:2px solid #FFFFFF;cursor:crosshair"></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="position:absolute;left:16px;bottom:16px;display:flex;flex-direction:column;gap:6px;background:#FFFFFF;border:1px solid #EDE7DD;border-radius:16px;padding:6px;box-shadow:0 1px 4px rgba(43,38,32,0.08)">
+      <button onClick="{{toggleSidebar}}" title="Toggle drawer" style="width:36px;height:36px;border:none;background:transparent;border-radius:10px;cursor:pointer;font-size:15px">☰</button>
+      <button onClick="{{zoomIn}}" title="Zoom in" style="width:36px;height:36px;border:none;background:transparent;border-radius:10px;cursor:pointer;font-size:16px;font-weight:700">+</button>
+      <button onClick="{{zoomOut}}" title="Zoom out" style="width:36px;height:36px;border:none;background:transparent;border-radius:10px;cursor:pointer;font-size:16px;font-weight:700">–</button>
+      <button onClick="{{fitToScreen}}" title="Fit to screen" style="width:36px;height:36px;border:none;background:transparent;border-radius:10px;cursor:pointer;font-size:13px">⤢</button>
+    </div>
+    <button onClick="{{openExport}}" style="position:absolute;right:16px;top:16px;padding:11px 20px;background:#2B2620;color:#FFFFFF;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(43,38,32,0.18);font-family:inherit">Export Plan</button>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{overlaySave}}" hint-placeholder-val="{{false}}">
+  <div style="position:absolute;inset:0;background:#FDFBF7;z-index:20;display:flex;flex-direction:column;animation:weaveSlideUp 0.22s ease">
+    <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid #EDE7DD;background:#FFFFFF">
+      <button onClick="{{closeOverlay}}" style="width:36px;height:36px;border-radius:999px;border:1px solid #EDE7DD;background:#FFFFFF;cursor:pointer;font-size:16px">←</button>
+      <div style="font-size:17px;font-weight:700">Save something</div>
+    </div>
+    <div style="flex:1;overflow:auto;padding:20px clamp(16px,4vw,48px)">
+      <div style="max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px">
+        <input value="{{searchQuery}}" onChange="{{onSearchChange}}" placeholder="Search a title…" autoFocus="{{true}}" style="width:100%;padding:14px 18px;border-radius:999px;border:1px solid #EDE7DD;font-size:15px;outline:none;font-family:inherit;background:#FFFFFF"></input>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <sc-for list="{{searchTypeChips}}" as="chip" hint-placeholder-count="5">
+            <button onClick="{{chip.select}}" style="{{chip.style}}">{{chip.label}}</button>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <sc-for list="{{searchResults}}" as="r" hint-placeholder-count="3">
+            <div onClick="{{r.onAdd}}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#FFFFFF;border:1px solid #EDE7DD;border-radius:14px;cursor:pointer">
+              <div style="width:44px;height:44px;border-radius:10px;flex-shrink:0;background:{{r.stripeBg}}"></div>
+              <div style="flex:1;font-size:14px;font-weight:600">{{r.title}}</div>
+              <span style="font-size:13px;color:#8A8175;font-weight:600">Add</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{!hasSearchResults}}"><div style="padding:24px 4px;text-align:center;color:#8A8175;font-size:13px">No matches — try a different title.</div></sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{overlayDetail}}" hint-placeholder-val="{{false}}">
+  <div style="position:absolute;inset:0;background:#FDFBF7;z-index:20;display:flex;flex-direction:column;animation:weaveSlideUp 0.22s ease">
+    <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid #EDE7DD;background:#FFFFFF">
+      <button onClick="{{closeOverlay}}" style="width:36px;height:36px;border-radius:999px;border:1px solid #EDE7DD;background:#FFFFFF;cursor:pointer;font-size:16px">←</button>
+      <div style="font-size:17px;font-weight:700">Details</div>
+    </div>
+    <sc-if value="{{selectedItem}}" hint-placeholder-val="{{false}}">
+    <div style="flex:1;overflow:auto;padding:24px clamp(16px,4vw,48px) 48px">
+      <div style="max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
+        <div style="width:100%;height:220px;border-radius:20px;background:{{selectedItem.stripeBg}};display:flex;align-items:center;justify-content:center">
+          <span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#8A8175">{{selectedItem.meta.placeholder}}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="display:inline-flex;align-self:flex-start;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 12px 4px 8px;border-radius:999px;background:{{selectedItem.tagBg}};color:{{selectedItem.meta.color}}">
+            <span style="width:6px;height:6px;border-radius:999px;background:{{selectedItem.meta.color}}"></span>{{selectedItem.meta.label}}
+          </span>
+          <div style="font-size:24px;font-weight:700;line-height:1.2">{{selectedItem.title}}</div>
+          <div style="font-size:14px;color:#8A8175">{{selectedItem.subtitle}}</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:12px;font-weight:700;color:#8A8175;text-transform:uppercase;letter-spacing:0.04em">Status</div>
+          <div style="display:flex;gap:8px">
+            <sc-for list="{{statusOptions}}" as="opt" hint-placeholder-count="3">
+              <button onClick="{{opt.onSelect}}" style="{{opt.style}}">{{opt.icon}} {{opt.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <sc-if value="{{selectedItem.isDone}}" hint-placeholder-val="{{false}}">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:12px;font-weight:700;color:#8A8175;text-transform:uppercase;letter-spacing:0.04em">Rating</div>
+          <div style="display:flex;gap:4px;font-size:24px">
+            <sc-for list="{{selectedItem.stars}}" as="star" hint-placeholder-count="5">
+              <span onClick="{{star.onClick}}" style="cursor:pointer;color:{{star.color}}">{{star.glyph}}</span>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:8px">
+          <button onClick="{{selectedItem.onToggleCanvas}}" style="padding:12px 18px;border-radius:12px;border:1px solid #EDE7DD;background:#FFFFFF;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">{{selectedItem.canvasActionLabel}}</button>
+          <button onClick="{{selectedItem.onDelete}}" style="padding:12px 18px;border-radius:12px;border:1px solid #EDE7DD;background:#FFFFFF;color:#E8604C;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Delete</button>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{overlayExport}}" hint-placeholder-val="{{false}}">
+  <div style="position:absolute;inset:0;background:rgba(43,38,32,0.35);z-index:30;display:flex;align-items:center;justify-content:center;padding:24px;animation:weaveFadeIn 0.18s ease">
+    <div style="background:#FDFBF7;border-radius:24px;max-width:900px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(43,38,32,0.3);display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid #EDE7DD">
+        <div style="font-size:17px;font-weight:700">Export Plan</div>
+        <button onClick="{{closeOverlay}}" style="width:32px;height:32px;border-radius:999px;border:1px solid #EDE7DD;background:#FFFFFF;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:24px">
+        <div ref="{{exportPreviewRef}}" style="position:relative;width:100%;max-width:760px;height:460px;margin:0 auto;background:#FDFBF7;border:1px solid #EDE7DD;border-radius:16px;overflow:hidden">
+          <div style="position:absolute;top:0;left:0;width:1px;height:1px;transform-origin:0 0;transform:{{previewTransform}}">
+            <svg style="position:absolute;top:0;left:0;overflow:visible" width="1" height="1">
+              <defs><marker id="weave-arrow-preview" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2B2620"></path></marker></defs>
+              <sc-for list="{{connectionPaths}}" as="conn" hint-placeholder-count="1">
+                <path d="{{conn.d}}" stroke="#2B2620" stroke-width="2" fill="none" marker-end="url(#weave-arrow-preview)" opacity="0.55"></path>
+              </sc-for>
+            </svg>
+            <sc-for list="{{connectionPaths}}" as="conn" hint-placeholder-count="1">
+              <sc-if value="{{conn.showLabel}}" hint-placeholder-val="{{false}}">
+                <div style="position:absolute;left:{{conn.midX}}px;top:{{conn.midY}}px;transform:translate(-50%,-50%);background:#FFFFFF;border:1px solid #EDE7DD;border-radius:999px;padding:4px 12px;font-size:11px;font-weight:600;white-space:nowrap">{{conn.label}}</div>
+              </sc-if>
+            </sc-for>
+            <sc-for list="{{placedItems}}" as="item" hint-placeholder-count="2">
+              <div style="position:absolute;left:{{item.x}}px;top:{{item.y}}px;width:170px;background:#FFFFFF;border:1px solid #EDE7DD;border-radius:20px;box-shadow:0 2px 8px rgba(43,38,32,0.08)">
+                <div style="height:96px;border-radius:20px 20px 0 0;background:{{item.stripeBg}}"></div>
+                <div style="padding:10px 12px 12px">
+                  <div style="font-size:13px;font-weight:600">{{item.title}}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{!hasPlacedItems}}"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#8A8175;font-size:13px">Nothing placed on the canvas yet.</div></sc-if>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:24px;flex-wrap:wrap">
+          <div style="display:flex;background:#FFFFFF;border:1px solid #EDE7DD;border-radius:999px;padding:3px;gap:2px">
+            <button onClick="{{setFormatPng}}" style="{{pngToggleStyle}}">PNG</button>
+            <button onClick="{{setFormatPdf}}" style="{{pdfToggleStyle}}">PDF</button>
+          </div>
+          <button onClick="{{doExport}}" style="padding:12px 22px;border-radius:12px;border:none;background:#2B2620;color:#FFFFFF;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Download {{exportFormatLabel}}</button>
+          <button disabled="{{true}}" title="Coming soon" style="padding:12px 22px;border-radius:12px;border:1px solid #EDE7DD;background:#F4F1EA;color:#8A8175;font-size:14px;font-weight:600;cursor:not-allowed;font-family:inherit">Copy Shareable Link · Soon</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const TYPE_META = {
+  movie: { color: '#E8604C', label: 'Movie', placeholder: 'poster' },
+  music: { color: '#8B5FBF', label: 'Music', placeholder: 'album cover' },
+  book: { color: '#D4A24C', label: 'Book', placeholder: 'book cover' },
+  video: { color: '#3FA79B', label: 'Video', placeholder: 'thumbnail' },
+  playlist: { color: '#B08FD9', label: 'Playlist', placeholder: 'cover' }
+};
+const FILTER_TYPES = ['movie', 'music', 'book', 'video'];
+const SEARCH_TYPES = ['movie', 'music', 'book', 'video', 'playlist'];
+const RESULT_POOL = {
+  movie: ['Everything Everywhere All at Once', 'Dune: Part Two', 'The Grand Budapest Hotel', 'Parasite', 'Spirited Away'],
+  music: ['Discovery — Daft Punk', 'Blonde — Frank Ocean', 'In Rainbows — Radiohead', 'Random Access Memories — Daft Punk'],
+  book: ['Project Hail Mary — Andy Weir', 'Klara and the Sun — Kazuo Ishiguro', 'Piranesi — Susanna Clarke'],
+  video: ['How To Make Pasta From Scratch', 'A Short History of Almost Everything (video essay)', 'Behind the Scenes: Dune'],
+  playlist: ['Friday Night Chill', 'Road Trip Mix', 'Focus Flow']
+};
+const CARD_W = 170, CARD_H = 200, CALENDAR_DAYS = 5;
+
+function stripeCss(color) {
+  return `repeating-linear-gradient(135deg, ${color}26, ${color}26 10px, ${color}12 10px, ${color}12 20px)`;
+}
+
+function dateStr(d) {
+  const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()];
+  return `${dayName}, ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+}
+
+class Component extends DCLogic {
+  state = {
+    view: 'calendar',
+    items: [
+      { id: 'i1', type: 'movie', title: 'Everything Everywhere All at Once', subtitle: '2022 · Movie', status: 'want', rating: null, day: 0, placed: true, x: 40, y: 80 },
+      { id: 'i2', type: 'music', title: 'Discovery', subtitle: 'Daft Punk · Album', status: 'done', rating: 5, day: 0, placed: true, x: 200, y: 80 },
+      { id: 'i3', type: 'book', title: 'Project Hail Mary', subtitle: 'Andy Weir · Book', status: 'in_progress', rating: null, day: 1, placed: false, x: 0, y: 0 },
+      { id: 'i4', type: 'video', title: 'How To Make Pasta From Scratch', subtitle: 'YouTube · Video', status: 'want', rating: null, day: 1, placed: false, x: 0, y: 0 }
+    ],
+    connections: {},
+    dayCanvasState: {
+      'day-0': { canvasOpen: false, scale: 1, offset: { x: 0, y: 0 }, canvasRef: null, worldRef: null },
+      'day-1': { canvasOpen: false, scale: 1, offset: { x: 0, y: 0 }, canvasRef: null, worldRef: null },
+      'day-2': { canvasOpen: false, scale: 1, offset: { x: 0, y: 0 }, canvasRef: null, worldRef: null },
+      'day-3': { canvasOpen: false, scale: 1, offset: { x: 0, y: 0 }, canvasRef: null, worldRef: null },
+      'day-4': { canvasOpen: false, scale: 1, offset: { x: 0, y: 0 }, canvasRef: null, worldRef: null }
+    },
+    activeFilters: new Set(FILTER_TYPES),
+    overlay: null,
+    selectedItemId: null,
+    searchQuery: '',
+    searchType: 'movie',
+    sidebarOpen: true,
+    scale: 1,
+    offset: { x: 40, y: 40 },
+    tempLine: null,
+    editingConnectionId: null,
+    exportFormat: 'png'
+  };
+
+  canvasAreaRef = React.createRef();
+  worldRef = React.createRef();
+  exportPreviewRef = React.createRef();
+
+  decorate = (item) => ({
+    ...item,
+    meta: TYPE_META[item.type],
+    stripeBg: stripeCss(TYPE_META[item.type].color),
+    tagBg: `${TYPE_META[item.type].color}1A`,
+    isWant: item.status === 'want',
+    isInProgress: item.status === 'in_progress',
+    isDone: item.status === 'done'
+  });
+
+  setViewCalendar = () => this.setState({ view: 'calendar' });
+  setViewList = () => this.setState({ view: 'list' });
+  setViewCanvas = () => this.setState({ view: 'canvas' });
+  openSave = () => this.setState({ overlay: 'save', searchQuery: '' });
+  openDetail = (id) => this.setState({ overlay: 'detail', selectedItemId: id });
+  openExport = () => this.setState({ overlay: 'export' });
+  closeOverlay = () => this.setState({ overlay: null, editingConnectionId: null });
+  toggleSidebar = () => this.setState((s) => ({ sidebarOpen: !s.sidebarOpen }));
+
+  toggleFilter = (type) => this.setState((s) => {
+    const next = new Set(s.activeFilters);
+    next.has(type) ? next.delete(type) : next.add(type);
+    return { activeFilters: next };
+  });
+
+  setStatus = (id, status) => this.setState((s) => ({ items: s.items.map((i) => i.id === id ? { ...i, status } : i) }));
+  setRating = (id, rating) => this.setState((s) => ({ items: s.items.map((i) => i.id === id ? { ...i, rating } : i) }));
+  deleteItem = (id) => this.setState((s) => ({
+    items: s.items.filter((i) => i.id !== id),
+    overlay: null, selectedItemId: null
+  }));
+
+  placeOnCanvas = (id) => {
+    const rect = this.canvasAreaRef.current ? this.canvasAreaRef.current.getBoundingClientRect() : { width: 800, height: 500 };
+    const s = this.state;
+    const cx = (rect.width / 2 - s.offset.x) / s.scale;
+    const cy = (rect.height / 2 - s.offset.y) / s.scale;
+    const jx = Math.random() * 60 - 30, jy = Math.random() * 60 - 30;
+    this.setState((s2) => ({ items: s2.items.map((i) => i.id === id ? { ...i, placed: true, x: cx - 85 + jx, y: cy - 100 + jy } : i) }));
+  };
+  removeFromCanvas = (id) => this.setState((s) => ({
+    items: s.items.map((i) => i.id === id ? { ...i, placed: false } : i)
+  }));
+
+  onSearchChange = (e) => this.setState({ searchQuery: e.target.value });
+  selectSearchType = (t) => this.setState({ searchType: t });
+  addFromSearch = (title) => {
+    const id = 'i' + Date.now();
+    const type = this.state.searchType;
+    this.setState((s) => ({
+      items: [...s.items, { id, type, title, subtitle: TYPE_META[type].label, status: 'want', rating: null, day: 0, placed: false, x: 0, y: 0 }],
+      overlay: null, searchQuery: ''
+    }));
+  };
+
+  startCardDrag = (dayId, item, e) => {
+    e.stopPropagation();
+    const rect = (e.currentTarget && e.currentTarget.closest('[onPointerDown]')?.parentElement?.parentElement) || { left: 0, top: 0, getBoundingClientRect: () => ({ left: 0, top: 0 }) };
+    const s = this.state;
+    const dayState = dayId ? s.dayCanvasState[dayId] : s;
+    const origX = item.x, origY = item.y;
+    const onMove = (ev) => {
+      const ds2 = dayId ? s.dayCanvasState[dayId] : s;
+      const dx = ev.clientX * 0.5, dy = ev.clientY * 0.5;
+      this.setState((s3) => ({ items: s3.items.map((it) => (it.id === item.id && (dayId ? it.day === parseInt(dayId.split('-')[1]) : true)) ? { ...it, x: origX + (dx * 0.01), y: origY + (dy * 0.01) } : it) }));
+    };
+    const onUp = () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  };
+
+  startConnectionDrag = (dayId, fromId, e) => {
+    e.stopPropagation(); e.preventDefault();
+    const s = this.state;
+    this.setState({ tempLine: { fromId, x: e.clientX, y: e.clientY, dayId } });
+    const onMove = (ev) => {
+      this.setState((s3) => ({ tempLine: s3.tempLine ? { ...s3.tempLine, x: ev.clientX, y: ev.clientY } : null }));
+    };
+    const onUp = (ev) => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      const target = document.elementFromPoint(ev.clientX, ev.clientY);
+      const cardEl = target && target.closest && target.closest('[data-item-id]');
+      const toId = cardEl && cardEl.getAttribute('data-item-id');
+      if (toId && toId !== fromId) {
+        const newConn = { id: 'c' + Date.now(), from: fromId, to: toId, label: '' };
+        this.setState((s3) => {
+          const ccs = (s3.connections[dayId] || []);
+          return { connections: { ...s3.connections, [dayId]: [...ccs, newConn] }, tempLine: null, editingConnectionId: newConn.id };
+        });
+      } else {
+        this.setState({ tempLine: null });
+      }
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  };
+
+  onCanvasBackgroundPointerDown = (dayId, e) => {
+    const startX = e.clientX, startY = e.clientY;
+    const origOffset = this.state.dayCanvasState[dayId]?.offset || { x: 0, y: 0 };
+    const onMove = (ev) => {
+      this.setState((s) => ({
+        dayCanvasState: {
+          ...s.dayCanvasState,
+          [dayId]: { ...s.dayCanvasState[dayId], offset: { x: origOffset.x + (ev.clientX - startX), y: origOffset.y + (ev.clientY - startY) } }
+        }
+      }));
+    };
+    const onUp = () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  };
+
+  onCanvasWheel = (dayId, e) => {
+    try { e.preventDefault(); } catch (err) {}
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    this.setState((s) => {
+      const ds = s.dayCanvasState[dayId];
+      const newScale = Math.min(2, Math.max(0.4, (ds.scale || 1) + delta));
+      return {
+        dayCanvasState: {
+          ...s.dayCanvasState,
+          [dayId]: { ...ds, scale: newScale }
+        }
+      };
+    });
+  };
+
+  toggleCalendarCanvas = (dayId) => {
+    this.setState((s) => ({
+      dayCanvasState: {
+        ...s.dayCanvasState,
+        [dayId]: { ...s.dayCanvasState[dayId], canvasOpen: !s.dayCanvasState[dayId].canvasOpen }
+      }
+    }));
+  };
+
+  updateConnectionLabel = (dayId, id, label) => {
+    this.setState((s) => {
+      const cs = s.connections[dayId] || [];
+      return { connections: { ...s.connections, [dayId]: cs.map((c) => c.id === id ? { ...c, label } : c) } };
+    });
+  };
+
+  onCanvasWheel = () => this.setState((s) => ({ scale: Math.min(2, Math.max(0.4, s.scale + 0.15)) }));
+  zoomIn = () => this.setState((s) => ({ scale: Math.min(2, s.scale + 0.2) }));
+  zoomOut = () => this.setState((s) => ({ scale: Math.max(0.4, s.scale - 0.2) }));
+  fitToScreen = () => {
+    const placed = this.state.items.filter((i) => i.placed);
+    if (!placed.length) { this.setState({ scale: 1, offset: { x: 40, y: 40 } }); return; }
+    const minX = Math.min(...placed.map((i) => i.x)), minY = Math.min(...placed.map((i) => i.y));
+    const maxX = Math.max(...placed.map((i) => i.x + CARD_W)), maxY = Math.max(...placed.map((i) => i.y + CARD_H));
+    const cw = maxX - minX, ch = maxY - minY, pad = 60;
+    const rect = this.canvasAreaRef.current ? this.canvasAreaRef.current.getBoundingClientRect() : { width: 800, height: 500 };
+    const newScale = Math.min(2, Math.max(0.4, Math.min((rect.width - 2 * pad) / cw, (rect.height - 2 * pad) / ch)));
+    const offset = { x: pad - minX * newScale + Math.max(0, (rect.width - 2 * pad - cw * newScale) / 2), y: pad - minY * newScale + Math.max(0, (rect.height - 2 * pad - ch * newScale) / 2) };
+    this.setState({ scale: newScale, offset });
+  };
+
+  setFormatPng = () => this.setState({ exportFormat: 'png' });
+  setFormatPdf = () => this.setState({ exportFormat: 'pdf' });
+
+  doExport = () => {
+    const node = this.exportPreviewRef.current;
+    if (!node || !window.html2canvas) return;
+    window.html2canvas(node, { backgroundColor: '#FDFBF7', scale: 2 }).then((canvas) => {
+      if (this.state.exportFormat === 'png') {
+        const link = document.createElement('a');
+        link.download = 'weave-plan.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } else if (window.jspdf) {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save('weave-plan.pdf');
+      }
+    });
+  };
+
+  renderVals() {
+    const s = this.state;
+    const decorate = this.decorate;
+
+    const now = new Date();
+    const calendarDays = [];
+    for (let i = 0; i < CALENDAR_DAYS; i++) {
+      const d = new Date(now);
+      d.setDate(d.getDate() + i);
+      const dayId = `day-${i}`;
+      const dayItems = s.items.filter((it) => it.day === i && s.activeFilters.has(it.type)).map(decorate);
+      const ds = s.dayCanvasState[dayId] || { canvasOpen: false, scale: 1, offset: { x: 0, y: 0 } };
+      const placedOnDay = s.items.filter((it) => it.day === i && it.placed);
+      const conns = s.connections[dayId] || [];
+      const findItem = (id) => s.items.find((it) => it.id === id);
+      const connPaths = conns.map((c) => {
+        const from = findItem(c.from), to = findItem(c.to);
+        if (!from || !to) return null;
+        const fx = from.x + 60, fy = from.y + 30, tx = to.x, ty = to.y + 30;
+        const c1x = fx + 40, c1y = fy, c2x = tx - 40, c2y = ty;
+        const d = `M ${fx} ${fy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${tx} ${ty}`;
+        const midX = (fx + 3 * c1x + 3 * c2x + tx) / 8, midY = (fy + 3 * c1y + 3 * c2y + ty) / 8;
+        return {
+          id: c.id, d, midX, midY, label: c.label, showLabel: !!c.label,
+          isEditing: s.editingConnectionId === c.id,
+          onEdit: () => this.setState({ editingConnectionId: c.id }),
+          onLabelChange: (e) => this.updateConnectionLabel(dayId, c.id, e.target.value),
+          onLabelBlur: () => this.setState({ editingConnectionId: null })
+        };
+      }).filter(Boolean);
+      const dayCalendar = {
+        id: dayId, dateLabel: dateStr(d), itemCount: dayItems.length, hasItems: dayItems.length > 0,
+        items: dayItems.map((it) => ({ ...it, onOpen: () => this.openDetail(it.id) })),
+        canvasOpen: ds.canvasOpen, toggleCanvas: () => this.toggleCalendarCanvas(dayId),
+        canvasButtonLabel: ds.canvasOpen ? '− Hide Canvas' : '+ Show Canvas',
+        onWheel: (e) => this.onCanvasWheel(dayId, e),
+        onCanvasPointerDown: (e) => this.onCanvasBackgroundPointerDown(dayId, e),
+        worldTransform: `translate(${ds.offset?.x || 0}px, ${ds.offset?.y || 0}px) scale(${ds.scale || 1})`,
+        connectionPaths: connPaths,
+        tempLine: s.tempLine && s.tempLine.dayId === dayId ? s.tempLine : null,
+        placedItems: placedOnDay.map((it) => ({
+          ...decorate(it),
+          onDragStart: (e) => this.startCardDrag(dayId, it, e),
+          onConnectStart: (e) => this.startConnectionDrag(dayId, it.id, e)
+        }))
+      };
+      calendarDays.push(dayCalendar);
+    }
+
+    const chipStyleBase = 'display:inline-flex;align-items:center;gap:6px;padding:7px 14px 7px 10px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid';
+    const filterChips = FILTER_TYPES.map((t) => {
+      const active = s.activeFilters.has(t);
+      const c = TYPE_META[t].color;
+      return {
+        type: t, label: TYPE_META[t].label, toggle: () => this.toggleFilter(t),
+        style: `${chipStyleBase} ${active ? c : '#EDE7DD'};background:${active ? c + '1A' : '#FFFFFF'};color:${active ? c : '#8A8175'}`,
+        dotStyle: `width:6px;height:6px;border-radius:999px;background:${c}`
+      };
+    });
+
+    const visibleItems = s.items.filter((i) => s.activeFilters.has(i.type)).map((it) => {
+      const d = decorate(it);
+      const badgeColor = d.isDone ? '#FFFFFF' : d.isInProgress ? '#2B2620' : '#8A8175';
+      const badgeBg = d.isDone ? '#6FAE7C' : d.isInProgress ? '#EDE7DD' : 'transparent';
+      const badgeBorder = d.isWant ? '1px dashed #8A8175' : 'none';
+      return {
+        ...d, onOpen: () => this.openDetail(it.id),
+        statusBadgeStyle: `width:26px;height:26px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:${badgeBg};border:${badgeBorder};color:${badgeColor}`
+      };
+    });
+
+    const placedItems = s.items.filter((i) => i.placed).map((it) => {
+      const d = decorate(it);
+      const badgeColor = d.isDone ? '#FFFFFF' : '#2B2620';
+      const badgeBg = d.isDone ? '#6FAE7C' : '#FFFFFF';
+      return {
+        ...d,
+        onDragStart: (e) => this.startCardDrag(null, it, e),
+        onConnectStart: (e) => this.startConnectionDrag(null, it.id, e),
+        statusBadgeStyleSmall: `position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:${badgeBg};color:${badgeColor};box-shadow:0 1px 3px rgba(43,38,32,0.15)`
+      };
+    });
+
+    const unplacedItems = s.items.filter((i) => !i.placed).map((it) => ({ ...decorate(it), onAdd: () => this.placeOnCanvas(it.id) }));
+
+    const findItem = (id) => s.items.find((i) => i.id === id);
+    const connectionPaths = (s.connections.canvas || []).map((c) => {
+      const from = findItem(c.from), to = findItem(c.to);
+      if (!from || !to) return null;
+      const fx = from.x + CARD_W, fy = from.y + 48, tx = to.x, ty = to.y + 48;
+      const c1x = fx + 80, c1y = fy, c2x = tx - 80, c2y = ty;
+      const d = `M ${fx} ${fy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${tx} ${ty}`;
+      const midX = (fx + 3 * c1x + 3 * c2x + tx) / 8, midY = (fy + 3 * c1y + 3 * c2y + ty) / 8;
+      return {
+        id: c.id, d, midX, midY, label: c.label,
+        isEditing: s.editingConnectionId === c.id,
+        showLabel: s.editingConnectionId !== c.id && !!c.label,
+        onEdit: () => this.setState({ editingConnectionId: c.id }),
+        onLabelChange: (e) => this.setState((s2) => ({ connections: { ...s2.connections, canvas: (s2.connections.canvas || []).map((cc) => cc.id === c.id ? { ...cc, label: e.target.value } : cc) } })),
+        onLabelBlur: () => this.setState({ editingConnectionId: null })
+      };
+    }).filter(Boolean);
+
+    let tempLine = null;
+    if (s.tempLine && !s.tempLine.dayId) {
+      const from = findItem(s.tempLine.fromId);
+      if (from) {
+        const fx = from.x + CARD_W, fy = from.y + 48, tx = s.tempLine.x, ty = s.tempLine.y;
+        const c1x = fx + 80, c1y = fy, c2x = tx - 80, c2y = ty;
+        tempLine = { d: `M ${fx} ${fy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${tx} ${ty}` };
+      }
+    }
+
+    const searchTypeChips = SEARCH_TYPES.map((t) => {
+      const active = s.searchType === t;
+      const c = TYPE_META[t].color;
+      return {
+        type: t, label: TYPE_META[t].label, select: () => this.selectSearchType(t),
+        style: `${chipStyleBase.replace('gap:6px;', '')} ${active ? c : '#EDE7DD'};background:${active ? c : '#FFFFFF'};color:${active ? '#FFFFFF' : '#8A8175'}`
+      };
+    });
+    const q = s.searchQuery.trim().toLowerCase();
+    const searchResults = (RESULT_POOL[s.searchType] || []).filter((r) => !q || r.toLowerCase().includes(q)).map((title) => ({
+      title, stripeBg: stripeCss(TYPE_META[s.searchType].color), onAdd: () => this.addFromSearch(title)
+    }));
+
+    const selectedItemRaw = s.selectedItemId ? findItem(s.selectedItemId) : null;
+    let selectedItem = null;
+    if (selectedItemRaw) {
+      const d = decorate(selectedItemRaw);
+      selectedItem = {
+        ...d,
+        canvasActionLabel: d.placed ? 'Remove from canvas' : 'Add to canvas',
+        onToggleCanvas: () => { d.placed ? this.removeFromCanvas(d.id) : this.placeOnCanvas(d.id); this.setState({ overlay: null }); },
+        onDelete: () => this.deleteItem(d.id),
+        stars: [1, 2, 3, 4, 5].map((n) => ({
+          n, glyph: (d.rating || 0) >= n ? '★' : '☆', color: (d.rating || 0) >= n ? '#D4A24C' : '#EDE7DD',
+          onClick: () => this.setRating(d.id, n)
+        }))
+      };
+    }
+    const statusOptions = [
+      { key: 'want', label: 'Want', icon: '+' },
+      { key: 'in_progress', label: 'In progress', icon: '▶' },
+      { key: 'done', label: 'Done', icon: '✓' }
+    ].map((o) => {
+      const active = selectedItem && selectedItem.status === o.key;
+      return {
+        ...o, onSelect: () => this.setStatus(s.selectedItemId, o.key),
+        style: `flex:1;padding:10px 8px;border-radius:12px;border:1px solid ${active ? '#2B2620' : '#EDE7DD'};background:${active ? '#2B2620' : '#FFFFFF'};color:${active ? '#FFFFFF' : '#2B2620'};font-size:13px;font-weight:600;cursor:pointer;font-family:inherit`
+      };
+    });
+
+    const placed = s.items.filter((i) => i.placed);
+    let previewTransform = 'translate(40px,40px) scale(1)';
+    if (placed.length) {
+      const minX = Math.min(...placed.map((i) => i.x)), minY = Math.min(...placed.map((i) => i.y));
+      const maxX = Math.max(...placed.map((i) => i.x + CARD_W)), maxY = Math.max(...placed.map((i) => i.y + CARD_H));
+      const cw = maxX - minX, ch = maxY - minY, boxW = 760, boxH = 460, pad = 30;
+      const scale = Math.min(1.2, Math.max(0.3, Math.min((boxW - 2 * pad) / cw, (boxH - 2 * pad) / ch)));
+      const offX = pad - minX * scale + Math.max(0, (boxW - 2 * pad - cw * scale) / 2);
+      const offY = pad - minY * scale + Math.max(0, (boxH - 2 * pad - ch * scale) / 2);
+      previewTransform = `translate(${offX}px,${offY}px) scale(${scale})`;
+    }
+
+    const toggleBase = 'padding:8px 18px;border-radius:999px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit';
+
+    return {
+      isCalendarView: s.view === 'calendar',
+      isListView: s.view === 'list',
+      isCanvasView: s.view === 'canvas',
+      calendarToggleStyle: `${toggleBase};background:${s.view === 'calendar' ? '#2B2620' : 'transparent'};color:${s.view === 'calendar' ? '#FFFFFF' : '#8A8175'}`,
+      listToggleStyle: `${toggleBase};background:${s.view === 'list' ? '#2B2620' : 'transparent'};color:${s.view === 'list' ? '#FFFFFF' : '#8A8175'}`,
+      canvasToggleStyle: `${toggleBase};background:${s.view === 'canvas' ? '#2B2620' : 'transparent'};color:${s.view === 'canvas' ? '#FFFFFF' : '#8A8175'}`,
+      setViewCalendar: this.setViewCalendar, setViewList: this.setViewList, setViewCanvas: this.setViewCanvas,
+      openSave: this.openSave,
+      calendarDays,
+      filterChips, hasVisibleItems: visibleItems.length > 0, visibleItems,
+      sidebarOpen: s.sidebarOpen, toggleSidebar: this.toggleSidebar,
+      unplacedItems, hasUnplacedItems: unplacedItems.length > 0,
+      canvasAreaRef: this.canvasAreaRef, worldRef: this.worldRef,
+      worldTransform: `translate(${s.offset.x}px, ${s.offset.y}px) scale(${s.scale})`,
+      connectionPaths, tempLine, placedItems,
+      zoomIn: this.zoomIn, zoomOut: this.zoomOut, fitToScreen: this.fitToScreen,
+      openExport: this.openExport,
+      overlaySave: s.overlay === 'save', overlayDetail: s.overlay === 'detail', overlayExport: s.overlay === 'export',
+      closeOverlay: this.closeOverlay,
+      searchQuery: s.searchQuery, onSearchChange: this.onSearchChange,
+      searchTypeChips, searchResults, hasSearchResults: searchResults.length > 0,
+      selectedItem, statusOptions,
+      hasPlacedItems: placed.length > 0, previewTransform,
+      pngToggleStyle: `${toggleBase};background:${s.exportFormat === 'png' ? '#2B2620' : 'transparent'};color:${s.exportFormat === 'png' ? '#FFFFFF' : '#8A8175'}`,
+      pdfToggleStyle: `${toggleBase};background:${s.exportFormat === 'pdf' ? '#2B2620' : 'transparent'};color:${s.exportFormat === 'pdf' ? '#FFFFFF' : '#8A8175'}`,
+      setFormatPng: this.setFormatPng, setFormatPdf: this.setFormatPdf,
+      exportFormatLabel: s.exportFormat === 'png' ? 'PNG' : 'PDF',
+      doExport: this.doExport
+    };
+  }
+}
+
+</script>
+</body>
+</html>
