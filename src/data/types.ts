@@ -11,6 +11,7 @@ export interface MediaItem {
   placed: boolean;
   x: number;
   y: number;
+  reminderAt: number | null; // epoch ms
 }
 
 export interface Connection {

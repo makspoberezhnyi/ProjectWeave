@@ -5,6 +5,7 @@ import { CARD_H, CARD_W, MAX_SCALE, MIN_SCALE } from '../data/canvas';
 import { RESULT_POOL } from '../data/searchPool';
 import { SAMPLE_ITEMS } from '../data/sampleData';
 import { Connection, MediaItem, MediaType, Status, MEDIA_TYPES } from '../data/types';
+import { cancelReminder, scheduleReminder } from '../lib/notifications';
 
 type Overlay = 'save' | 'detail' | 'export' | null;
 
@@ -52,6 +53,8 @@ interface WeaveState {
   placeOnCanvas: (id: string) => void;
   removeFromCanvas: (id: string) => void;
   addFromSearch: (title: string, subtitle: string) => void;
+  setReminder: (id: string, whenMs: number) => void;
+  clearReminder: (id: string) => void;
 
   moveItem: (id: string, x: number, y: number) => void;
   toggleSidebar: () => void;
@@ -104,13 +107,15 @@ export const useWeaveStore = create<WeaveState>()(
         set((s) => ({ items: s.items.map((i) => (i.id === id ? { ...i, status } : i)) })),
       setRating: (id, rating) =>
         set((s) => ({ items: s.items.map((i) => (i.id === id ? { ...i, rating } : i)) })),
-      deleteItem: (id) =>
+      deleteItem: (id) => {
+        cancelReminder(id);
         set((s) => ({
           items: s.items.filter((i) => i.id !== id),
           connections: s.connections.filter((c) => c.from !== id && c.to !== id),
           overlay: null,
           selectedItemId: null,
-        })),
+        }));
+      },
       placeOnCanvas: (id) =>
         set((s) => ({
           items: s.items.map((i) =>
@@ -130,11 +135,21 @@ export const useWeaveStore = create<WeaveState>()(
         set((s) => ({
           items: [
             ...s.items,
-            { id, type, title, subtitle, status: 'want', rating: null, placed: false, x: 0, y: 0 },
+            { id, type, title, subtitle, status: 'want', rating: null, placed: false, x: 0, y: 0, reminderAt: null },
           ],
           overlay: null,
           searchQuery: '',
         }));
+      },
+      setReminder: (id, whenMs) => {
+        const item = get().items.find((i) => i.id === id);
+        if (!item) return;
+        set((s) => ({ items: s.items.map((i) => (i.id === id ? { ...i, reminderAt: whenMs } : i)) }));
+        scheduleReminder(id, item.title, whenMs);
+      },
+      clearReminder: (id) => {
+        cancelReminder(id);
+        set((s) => ({ items: s.items.map((i) => (i.id === id ? { ...i, reminderAt: null } : i)) }));
       },
 
       moveItem: (id, x, y) =>

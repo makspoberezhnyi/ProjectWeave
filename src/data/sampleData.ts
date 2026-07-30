@@ -12,6 +12,7 @@ export const SAMPLE_ITEMS: MediaItem[] = [
     placed: true,
     x: 40,
     y: 80,
+    reminderAt: null,
   },
   {
     id: 'i2',
@@ -23,6 +24,7 @@ export const SAMPLE_ITEMS: MediaItem[] = [
     placed: true,
     x: 260,
     y: 80,
+    reminderAt: null,
   },
   {
     id: 'i3',
@@ -34,6 +36,7 @@ export const SAMPLE_ITEMS: MediaItem[] = [
     placed: false,
     x: 0,
     y: 0,
+    reminderAt: null,
   },
   {
     id: 'i4',
@@ -45,5 +48,6 @@ export const SAMPLE_ITEMS: MediaItem[] = [
     placed: false,
     x: 0,
     y: 0,
+    reminderAt: null,
   },
 ];

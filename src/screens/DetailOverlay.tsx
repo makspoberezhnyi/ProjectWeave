@@ -1,16 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
-import { Button, XStack, YStack, Text } from 'tamagui';
+import { Button, XStack, YStack, Text, useThemeName } from 'tamagui';
 import { useWeaveStore } from '../state/store';
 import { Status, TYPE_LABEL } from '../data/types';
 import { MediaThumb } from '../components/MediaThumb';
 import { PillButton } from '../components/PillButton';
+import { DateTimeField } from '../components/DateTimeField';
+import { colorTokens } from '../design-system/tokens/colors';
+import { requestNotificationPermission } from '../lib/notifications';
 
 const STATUS_OPTIONS: { key: Status; label: string }[] = [
   { key: 'want', label: '+ Want' },
   { key: 'in_progress', label: '▶ In progress' },
   { key: 'done', label: '✓ Done' },
 ];
+
+function formatReminder(whenMs: number) {
+  return new Date(whenMs).toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
 
 export function DetailOverlay() {
   const item = useWeaveStore((s) => s.items.find((i) => i.id === s.selectedItemId));
@@ -20,8 +32,22 @@ export function DetailOverlay() {
   const deleteItem = useWeaveStore((s) => s.deleteItem);
   const placeOnCanvas = useWeaveStore((s) => s.placeOnCanvas);
   const removeFromCanvas = useWeaveStore((s) => s.removeFromCanvas);
+  const setReminder = useWeaveStore((s) => s.setReminder);
+  const clearReminder = useWeaveStore((s) => s.clearReminder);
+
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pendingDate, setPendingDate] = useState<Date>(() => new Date(Date.now() + 60 * 60 * 1000));
+
+  const themeName = useThemeName() === 'dark' ? 'dark' : 'light';
+  const tokens = colorTokens[themeName];
 
   if (!item) return null;
+
+  const openPicker = async () => {
+    await requestNotificationPermission();
+    setPendingDate(item.reminderAt ? new Date(item.reminderAt) : new Date(Date.now() + 60 * 60 * 1000));
+    setPickerOpen(true);
+  };
 
   return (
     <YStack position="absolute" inset={0} bg="$background" zi={20}>
@@ -75,6 +101,59 @@ export function DetailOverlay() {
               </XStack>
             </YStack>
           )}
+
+          <YStack gap="$2">
+            <Text fontSize={11} fontWeight="700" color="$colorSecondary" textTransform="uppercase">Reminder</Text>
+
+            {!pickerOpen && item.reminderAt && (
+              <XStack ai="center" jc="space-between" bg="$backgroundSunken" br="$3" p="$3">
+                <YStack>
+                  <Text fontSize={13} fontWeight="600" color="$color">{formatReminder(item.reminderAt)}</Text>
+                  <Text fontSize={11} color="$colorSecondary">You'll get a reminder here</Text>
+                </YStack>
+                <XStack gap="$2">
+                  <Button unstyled onPress={openPicker} px="$3" py="$2" br="$5" borderWidth={1} borderColor="$borderColor">
+                    <Text fontSize={11} fontWeight="600" color="$color">Change</Text>
+                  </Button>
+                  <Button unstyled onPress={() => clearReminder(item.id)} px="$3" py="$2" br="$5" borderWidth={1} borderColor="$borderColor">
+                    <Text fontSize={11} fontWeight="600" color="$movie">Remove</Text>
+                  </Button>
+                </XStack>
+              </XStack>
+            )}
+
+            {!pickerOpen && !item.reminderAt && (
+              <PillButton variant="secondary" onPress={openPicker}>
+                Set reminder
+              </PillButton>
+            )}
+
+            {pickerOpen && (
+              <YStack gap="$3" bg="$backgroundSunken" br="$3" p="$3">
+                <DateTimeField
+                  value={pendingDate}
+                  onChange={setPendingDate}
+                  surfaceColor={tokens.surface}
+                  borderColor={tokens.border}
+                  textColor={tokens.textPrimary}
+                />
+                <XStack gap="$2">
+                  <PillButton
+                    variant="primary"
+                    onPress={() => {
+                      setReminder(item.id, pendingDate.getTime());
+                      setPickerOpen(false);
+                    }}
+                  >
+                    Save reminder
+                  </PillButton>
+                  <PillButton variant="text" onPress={() => setPickerOpen(false)}>
+                    Cancel
+                  </PillButton>
+                </XStack>
+              </YStack>
+            )}
+          </YStack>
 
           <XStack gap="$2" flexWrap="wrap">
             <PillButton
