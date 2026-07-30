@@ -1,0 +1,53 @@
+import { MediaItem } from './types';
+
+// Seeds the first run so List/Canvas aren't empty, per the prototype spec.
+export const SAMPLE_ITEMS: MediaItem[] = [
+  {
+    id: 'i1',
+    type: 'movie',
+    title: 'Everything Everywhere All at Once',
+    subtitle: '2022 · Movie',
+    status: 'want',
+    rating: null,
+    placed: true,
+    x: 40,
+    y: 80,
+    reminderAt: null,
+  },
+  {
+    id: 'i2',
+    type: 'music',
+    title: 'Discovery',
+    subtitle: 'Daft Punk · Album',
+    status: 'done',
+    rating: 5,
+    placed: true,
+    x: 260,
+    y: 80,
+    reminderAt: null,
+  },
+  {
+    id: 'i3',
+    type: 'book',
+    title: 'Project Hail Mary',
+    subtitle: 'Andy Weir · Book',
+    status: 'in_progress',
+    rating: null,
+    placed: false,
+    x: 0,
+    y: 0,
+    reminderAt: null,
+  },
+  {
+    id: 'i4',
+    type: 'video',
+    title: 'How To Make Pasta From Scratch',
+    subtitle: 'YouTube · Video',
+    status: 'want',
+    rating: null,
+    placed: false,
+    x: 0,
+    y: 0,
+    reminderAt: null,
+  },
+];

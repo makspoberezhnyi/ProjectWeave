@@ -23,6 +23,8 @@ function buildTheme(mode: keyof typeof colorTokens) {
     book: c.book,
     video: c.video,
     playlist: c.playlist,
+    steamgame: c.steamgame,
+    boardgame: c.boardgame,
   };
 }
 
