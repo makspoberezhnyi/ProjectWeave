@@ -24,7 +24,7 @@ export function CanvasSidebar() {
             unplaced.map((item) => (
               <XStack key={item.id} ai="center" gap="$2" p="$2" bg="$background" br="$3" borderWidth={1} borderColor="$borderColor">
                 <YStack width={36} height={36} br="$2" overflow="hidden" flexShrink={0}>
-                  <MediaThumb type={item.type} radius={8} />
+                  <MediaThumb type={item.type} radius={8} imageUrl={item.imageUrl} />
                 </YStack>
                 <Text flex={1} fontSize={13} fontWeight="600" color="$color" numberOfLines={1}>
                   {item.title}

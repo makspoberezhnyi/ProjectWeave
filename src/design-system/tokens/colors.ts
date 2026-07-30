@@ -21,6 +21,8 @@ export const colorTokens = {
     book: '#D4A24C',
     video: '#3FA79B',
     playlist: '#B08FD9',
+    steamgame: '#3E6FBF',
+    boardgame: '#8C6239',
   },
   dark: {
     background: '#141310',
@@ -41,6 +43,8 @@ export const colorTokens = {
     book: '#E3B563',
     video: '#55C2B5',
     playlist: '#C7A9E3',
+    steamgame: '#6294E0',
+    boardgame: '#B8946E',
   },
 } as const;
 

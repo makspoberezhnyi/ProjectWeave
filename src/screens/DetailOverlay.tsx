@@ -61,7 +61,7 @@ export function DetailOverlay() {
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <YStack gap="$5" p="$5" maxWidth={480} width="100%" mx="auto">
           <YStack height={220} br="$4" overflow="hidden">
-            <MediaThumb type={item.type} radius={20} />
+            <MediaThumb type={item.type} radius={20} imageUrl={item.imageUrl} />
           </YStack>
 
           <YStack gap="$2">

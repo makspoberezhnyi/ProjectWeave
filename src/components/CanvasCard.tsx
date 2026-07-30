@@ -63,7 +63,7 @@ export function CanvasCard({
     >
       <YStack bg="$surface" br="$4" overflow="hidden" shadowColor="#000" shadowOpacity={0.12} shadowRadius={8}>
         <YStack height={96}>
-          <MediaThumb type={item.type} radius={0} />
+          <MediaThumb type={item.type} radius={0} imageUrl={item.imageUrl} />
         </YStack>
         <YStack p="$3" gap="$2">
           <Text fontSize={15} fontWeight="600" color="$color" numberOfLines={2}>

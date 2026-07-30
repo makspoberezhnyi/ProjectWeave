@@ -150,7 +150,7 @@ export function ExportOverlay() {
                 {placed.map((item) => (
                   <YStack key={item.id} position="absolute" left={item.x} top={item.y} width={CARD_W} bg="$surface" br="$4" overflow="hidden" borderWidth={1} borderColor="$borderColor">
                     <YStack height={90}>
-                      <MediaThumb type={item.type} radius={0} />
+                      <MediaThumb type={item.type} radius={0} imageUrl={item.imageUrl} />
                     </YStack>
                     <YStack p="$3">
                       <Text fontSize={13} fontWeight="600" color="$color" numberOfLines={1}>{item.title}</Text>

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeName } from 'tamagui';
 import { MediaType } from '../data/types';
@@ -16,10 +17,23 @@ function mix(hexA: string, rgbB: [number, number, number], t: number) {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-// Poster-style gradient cover, colored per media type — the v2 "colorful
-// gradient cover" treatment instead of a flat tint or a real image.
-export function MediaThumb({ type, radius = 12 }: { type: MediaType; radius?: number }) {
+// Real cover art when a search result has one; the v2 colorful gradient
+// poster otherwise (placeholder items, or the image failed to load).
+export function MediaThumb({ type, radius = 12, imageUrl }: { type: MediaType; radius?: number; imageUrl?: string }) {
   const themeName = useThemeName() === 'dark' ? 'dark' : 'light';
+  const [imageFailed, setImageFailed] = useState(false);
+
+  if (imageUrl && !imageFailed) {
+    return (
+      <Image
+        source={{ uri: imageUrl }}
+        style={{ flex: 1, borderRadius: radius }}
+        resizeMode="cover"
+        onError={() => setImageFailed(true)}
+      />
+    );
+  }
+
   const accent = colorTokens[themeName][type];
   const colors = [mix(accent, [255, 255, 255], 0.45), accent, mix(accent, [0, 0, 0], 0.35)] as const;
 

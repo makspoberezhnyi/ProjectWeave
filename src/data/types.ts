@@ -1,4 +1,4 @@
-export type MediaType = 'movie' | 'music' | 'book' | 'video' | 'playlist';
+export type MediaType = 'movie' | 'music' | 'book' | 'video' | 'playlist' | 'steamgame' | 'boardgame';
 export type Status = 'want' | 'in_progress' | 'done';
 
 export interface MediaItem {
@@ -12,6 +12,7 @@ export interface MediaItem {
   x: number;
   y: number;
   reminderAt: number | null; // epoch ms
+  imageUrl?: string;
 }
 
 export interface Connection {
@@ -21,7 +22,7 @@ export interface Connection {
   label: string;
 }
 
-export const MEDIA_TYPES: MediaType[] = ['movie', 'music', 'book', 'video', 'playlist'];
+export const MEDIA_TYPES: MediaType[] = ['movie', 'music', 'book', 'video', 'playlist', 'steamgame', 'boardgame'];
 
 export const TYPE_LABEL: Record<MediaType, string> = {
   movie: 'Movie',
@@ -29,4 +30,6 @@ export const TYPE_LABEL: Record<MediaType, string> = {
   book: 'Book',
   video: 'Video',
   playlist: 'Playlist',
+  steamgame: 'Steam Game',
+  boardgame: 'Board Game',
 };

@@ -2,7 +2,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { CARD_H, CARD_W, MAX_SCALE, MIN_SCALE } from '../data/canvas';
-import { RESULT_POOL } from '../data/searchPool';
 import { SAMPLE_ITEMS } from '../data/sampleData';
 import { Connection, MediaItem, MediaType, Status, MEDIA_TYPES } from '../data/types';
 import { cancelReminder, scheduleReminder } from '../lib/notifications';
@@ -52,7 +51,7 @@ interface WeaveState {
   deleteItem: (id: string) => void;
   placeOnCanvas: (id: string) => void;
   removeFromCanvas: (id: string) => void;
-  addFromSearch: (title: string, subtitle: string) => void;
+  addFromSearch: (title: string, subtitle: string, imageUrl?: string) => void;
   setReminder: (id: string, whenMs: number) => void;
   clearReminder: (id: string) => void;
 
@@ -129,13 +128,13 @@ export const useWeaveStore = create<WeaveState>()(
           items: s.items.map((i) => (i.id === id ? { ...i, placed: false } : i)),
           connections: s.connections.filter((c) => c.from !== id && c.to !== id),
         })),
-      addFromSearch: (title, subtitle) => {
+      addFromSearch: (title, subtitle, imageUrl) => {
         const type = get().searchType;
         const id = 'i' + Math.random().toString(36).slice(2, 10);
         set((s) => ({
           items: [
             ...s.items,
-            { id, type, title, subtitle, status: 'want', rating: null, placed: false, x: 0, y: 0, reminderAt: null },
+            { id, type, title, subtitle, imageUrl, status: 'want', rating: null, placed: false, x: 0, y: 0, reminderAt: null },
           ],
           overlay: null,
           searchQuery: '',
@@ -219,8 +218,3 @@ export const useWeaveStore = create<WeaveState>()(
     }
   )
 );
-
-export function searchResults(type: MediaType, query: string) {
-  const q = query.trim().toLowerCase();
-  return RESULT_POOL[type].filter((r) => !q || r.title.toLowerCase().includes(q));
-}
