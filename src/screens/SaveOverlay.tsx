@@ -109,6 +109,14 @@ export function SaveOverlay() {
               <Button unstyled disabled={!request} onPress={() => promptAsync()} bg="$pillPrimaryBackground" br="$5" px="$5" py="$3">
                 <Text color="$pillPrimaryText" fontWeight="700" fontSize={13}>Connect Spotify</Text>
               </Button>
+              <YStack gap="$1" ai="center">
+                <Text fontSize={11} color="$colorSecondary" textAlign="center">
+                  Getting "redirect_uri: Not matching configuration"? Add this exact value as a Redirect URI in your Spotify app's dashboard:
+                </Text>
+                <Text fontSize={11} fontWeight="700" color="$color" selectable>
+                  {redirectUri}
+                </Text>
+              </YStack>
             </YStack>
           ) : outcome.status === 'needs_key' || outcome.status === 'error' ? (
             <YStack py="$6" ai="center">
