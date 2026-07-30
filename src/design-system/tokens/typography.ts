@@ -10,7 +10,11 @@ const family = Platform.select({
 });
 
 // Scale: 1 caption · 2 small · 3 body · 4 card title · 5 section title · 6 display
-const size = { 1: 11, 2: 13, 3: 15, 4: 17, 5: 22, 6: 34, true: 15 } as const;
+// Exported as the numbers components pass directly to fontSize — Tamagui's
+// bare `fontSize="$N"` shorthand resolves against tokens.space, not this
+// scale, so call sites use fontSize={fontSizeScale[N]} instead of "$N".
+export const fontSizeScale = { 1: 11, 2: 13, 3: 15, 4: 17, 5: 22, 6: 34, true: 15 } as const;
+const size = fontSizeScale;
 const lineHeight = { 1: 14, 2: 18, 3: 22, 4: 22, 5: 28, 6: 39, true: 22 } as const;
 const letterSpacing = { 1: 0.4, 2: 0, 3: 0, 4: 0, 5: -0.2, 6: -0.6, true: 0 } as const;
 

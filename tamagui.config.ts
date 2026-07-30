@@ -1,13 +1,15 @@
 import { createTamagui, createTokens } from 'tamagui';
 import { space } from './src/design-system/tokens/space';
 import { radius } from './src/design-system/tokens/radius';
-import { headingFont, bodyFont } from './src/design-system/tokens/typography';
+import { headingFont, bodyFont, fontSizeScale } from './src/design-system/tokens/typography';
 import { themes } from './src/design-system/themes';
 
 const tokens = createTokens({
   color: { white: '#FFFFFF', black: '#000000', transparent: 'transparent' },
   space,
-  size: space,
+  // Tamagui resolves fontSize="$N" against tokens.size, not the active
+  // font's own size scale — so this must match fontSizeScale, not `space`.
+  size: fontSizeScale,
   radius,
   zIndex: { 0: 0, 1: 100, 2: 200, 3: 300, true: 0 },
 });
@@ -43,6 +45,8 @@ const config = createTamagui({
     br: 'borderRadius',
     w: 'width',
     h: 'height',
+    zi: 'zIndex',
+    als: 'alignSelf',
   } as const,
 });
 
